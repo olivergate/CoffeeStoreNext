@@ -1,0 +1,9 @@
+.vscode-test/
+out/
+test-fixtures/
+node_modules/
+devops/
+
+build/
+*.yml
+*.md

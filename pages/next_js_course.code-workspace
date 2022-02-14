@@ -1,0 +1,17 @@
+{
+  "folders": [
+	{
+		"path": ".."
+	}
+],
+  "settings": {
+    "workbench.colorCustomizations": {
+      "activityBar.foreground": "#f7b830",
+      "activityBar.background": "#442609",
+      "statusBar.background": "#442609",
+      "statusBar.foreground": "#f7b830"
+    },
+    "files.autoSave": "afterDelay",
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
+}
