@@ -2,6 +2,7 @@ import type { NextPage } from 'next';
 import Head from 'next/head';
 import Image from 'next/image';
 import { Banner } from '../components/banner';
+import Card from '../components/card';
 import styles from '../styles/Home.module.css';
 
 const Home: NextPage = () => {
@@ -20,6 +21,7 @@ const Home: NextPage = () => {
         <div className={styles.heroImage}>
           <Image src="/static/hero-image.png" width={700} height={500} />
         </div>
+        <Card href="coffee-store/dsd" imageUrl="/static/hero-image.png" name="Test Shop" />
       </main>
     </div>
   );
