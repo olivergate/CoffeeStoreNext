@@ -17,7 +17,7 @@
 .heroImage {
   position: absolute;
   top: 0px;
-  z-index: 0;
+  z-index: -0;
 }
 
 .cardLayout {
@@ -25,10 +25,13 @@
   grid-template-columns: repeat(1, minmax(0, 1fr));
   column-gap: 1.5rem;
   row-gap: 1.5rem;
+  position: relative;
+  z-index: 6767;
 }
 
 .card {
   justify-content: center;
+  border-radius: 0.75rem;
 }
 
 .heading2 {

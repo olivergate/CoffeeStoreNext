@@ -2,7 +2,7 @@
 .container {
   margin-bottom: 1rem;
   position: relative;
-  z-index: 2;
+  z-index: 5;
 }
 
 .title {

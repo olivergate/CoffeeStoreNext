@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import styles from '../styles/card.module.css';
-import classnames from 'classnames';
+import * as classnames from 'classnames';
 
 interface Props {
   name: string;
@@ -13,7 +13,7 @@ const Card: React.VFC<Props> = props => {
   return (
     <Link href={props.href}>
       <a className={styles.cardLink}>
-        <div className={classnames(styles.contianer, 'glass')}>
+        <div className={classnames.default(styles.container, 'glass')}>
           <div className={styles.cardHeaderWrapper}>
             <h2 className={styles.cardHeader}>{props.name}</h2>
           </div>

@@ -1,11 +1,32 @@
-import type { NextPage } from 'next';
+import type { NextPage, GetStaticProps } from 'next';
 import Head from 'next/head';
 import Image from 'next/image';
 import { Banner } from '../components/banner';
 import Card from '../components/card';
 import styles from '../styles/Home.module.css';
+import coffeeStoresData from '../data/coffee-stores.json';
 
-const Home: NextPage = () => {
+export interface CoffeeStore {
+  id: string;
+  name: string;
+  imgUrl: string;
+  websiteUrl: string;
+  address: string;
+  neighbourhood: string;
+}
+
+interface Props {
+  coffeeStores: CoffeeStore[];
+}
+
+export const getStaticProps: GetStaticProps = context => {
+  return {
+    props: { coffeeStores: coffeeStoresData },
+  };
+};
+
+const Home: NextPage<Props> = props => {
+  console.log(props);
   const buttonClick = () => {
     console.log('Button Clicked');
   };
@@ -21,7 +42,21 @@ const Home: NextPage = () => {
         <div className={styles.heroImage}>
           <Image src="/static/hero-image.png" width={700} height={500} />
         </div>
-        <Card href="coffee-store/dsd" imageUrl="/static/hero-image.png" name="Test Shop" />
+        {props.coffeeStores.length > 0 && (
+          <>
+            <h2 className={styles.heading2}>Toronto Stores</h2>
+            <div className={styles.cardLayout}>
+              {props.coffeeStores.map(x => (
+                <div key={x.id} className={styles.card}>
+                  <Card href={`coffee-store/${x.id}`} imageUrl={x.imgUrl} name={x.name} />
+                </div>
+              ))}
+            </div>
+            <div className={styles.card}>
+              <Card href={`coffee-store/aidfaisfjiae`} imageUrl={'/static/hero-image.png'} name={'FHAISfadh'} />
+            </div>
+          </>
+        )}
       </main>
     </div>
   );
