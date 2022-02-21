@@ -1,3 +1,4 @@
+import axios from 'axios';
 import type { NextPage, GetStaticProps } from 'next';
 import Head from 'next/head';
 import Image from 'next/image';
@@ -5,28 +6,57 @@ import { Banner } from '../components/banner';
 import Card from '../components/card';
 import styles from '../styles/Home.module.css';
 import coffeeStoresData from '../data/coffee-stores.json';
+import { StoreImage, fsq_get, getNearby, getPhotos } from '../axios';
 
 export interface CoffeeStore {
-  id: string;
+  fsq_id: string;
+  categories: {
+    id: number;
+    name: string;
+    icon: {
+      prefix: string;
+      suffix: string;
+    };
+  }[];
+  chains: any[];
+  distance: number;
+  geocodes: {
+    main: {
+      latitude: number;
+      longitude: number;
+    };
+  };
+  location: {
+    address: string;
+    country: string;
+    cross_street: string;
+    dma: string;
+    formatted_address: string;
+    locality: string;
+    neighborhood: string;
+    postcode: string;
+    region: string;
+  };
   name: string;
-  imgUrl: string;
-  websiteUrl: string;
-  address: string;
-  neighbourhood: string;
+  related_places: {};
+  timezone: string;
 }
 
 interface Props {
   coffeeStores: CoffeeStore[];
+  coffeeStoresPhoto: StoreImage[];
 }
 
-export const getStaticProps: GetStaticProps = context => {
+export const getStaticProps: GetStaticProps = async context => {
+  const data = await getNearby('41.8781,-87.6298', 'coffee store');
+  console.log(data);
+  const photoData = await getPhotos(data.results.map(x => x.fsq_id));
   return {
-    props: { coffeeStores: coffeeStoresData },
+    props: { coffeeStores: data.results, coffeeStoresPhoto: photoData },
   };
 };
 
 const Home: NextPage<Props> = props => {
-  console.log(props);
   const buttonClick = () => {
     console.log('Button Clicked');
   };
@@ -46,14 +76,16 @@ const Home: NextPage<Props> = props => {
           <>
             <h2 className={styles.heading2}>Toronto Stores</h2>
             <div className={styles.cardLayout}>
-              {props.coffeeStores.map(x => (
-                <div key={x.id} className={styles.card}>
-                  <Card href={`coffee-store/${x.id}`} imageUrl={x.imgUrl} name={x.name} />
-                </div>
-              ))}
-            </div>
-            <div className={styles.card}>
-              <Card href={`coffee-store/aidfaisfjiae`} imageUrl={'/static/hero-image.png'} name={'FHAISfadh'} />
+              {props.coffeeStores.map(x => {
+                const photo = props.coffeeStoresPhoto.find(photo => x.fsq_id === photo.fsq_id)!;
+                console.log(photo);
+
+                return (
+                  <div key={x.fsq_id} className={styles.card}>
+                    <Card href={`coffee-store/${x.fsq_id}`} imageUrl={photo?.photo} name={x.name} />
+                  </div>
+                );
+              })}
             </div>
           </>
         )}

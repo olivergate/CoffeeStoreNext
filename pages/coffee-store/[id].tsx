@@ -4,30 +4,33 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { ParsedUrlQuery } from 'querystring';
-import { CoffeeStore } from '../';
-import coffeeStoreData from '../../data/coffee-stores.json';
 import styles from '../../styles/coffeeStore.module.css';
-
-const typedCoffeeStoreData: CoffeeStore[] = coffeeStoreData;
+import classnames from 'classnames';
+import { fsq_get, getNearby } from '../../axios';
+import { CoffeeStore } from '..';
 
 interface Params extends ParsedUrlQuery {
   id: string;
   [key: string]: any;
 }
 
-export const getStaticProps: GetStaticProps<Props, Params> = context => {
+export const getStaticProps: GetStaticProps<Props, Params> = async context => {
+  const data = await getNearby('41.8781,-87.6298', 'coffee store');
+
   return {
     props: {
-      coffeeStore: typedCoffeeStoreData.find(x => x.id.toString() === context.params?.id),
+      coffeeStore: data.results.find(x => x.fsq_id.toString() === context.params?.id),
     },
   };
 };
 
-const paths = typedCoffeeStoreData.map(x => ({ params: { id: x.id } }));
+export const getStaticPaths: GetStaticPaths<Params> = async context => {
+  const data = await getNearby('41.8781,-87.6298', 'coffee store');
 
-export const getStaticPaths: GetStaticPaths<Params> = () => {
   return {
-    paths,
+    paths: data.results.map(x => ({
+      params: { id: x.fsq_id },
+    })),
     fallback: true,
   };
 };
@@ -42,22 +45,43 @@ const StorePage: NextPage<Props> = props => {
   if (router.isFallback || !coffeeStore) {
     return <div>Loading...</div>;
   }
-  console.log(props);
+
+  const handleUpload = () => console.log(props);
   return (
     <div className={styles.layout}>
       <Head>
         <title>{coffeeStore.name}</title>
       </Head>
-      <div className={styles.col1}>
-        <Link href={'/'}>
-          <a> Back to home</a>
-        </Link>
-        <p>{coffeeStore.name}</p>
-        <Image width={600} height={360} alt={coffeeStore.name} src={coffeeStore.imgUrl} />
-      </div>
-      <div className={styles.col2}>
-        <p>{coffeeStore.address}</p>
-        <p>{coffeeStore.neighbourhood}</p>
+      <div className={styles.container}>
+        <div className={styles.col1}>
+          <div className={styles.backToHomeLink}></div>
+          <Link href={'/'}>
+            <a> Back to home</a>
+          </Link>
+          <div className={styles.nameWrapper}>
+            <h1 className={styles.name}>{coffeeStore.name}</h1>
+          </div>
+          <Image width={600} height={360} alt={coffeeStore.name} src={'/static/icons/storefront_24.svg'} />
+        </div>
+        <div className={classnames(styles.col2, 'glass')}>
+          <div className={styles.iconWrapper}>
+            <Image width={24} height={24} src="/static/icons/location_24.svg" />
+            <p className={styles.text}>{coffeeStore.location.address}</p>
+          </div>
+          {coffeeStore.location.neighborhood && (
+            <div className={styles.iconWrapper}>
+              <Image width={24} height={24} src="/static/icons/storefront_24.svg" />
+              <p className={styles.text}>{coffeeStore.location.neighborhood}</p>
+            </div>
+          )}
+          <div className={styles.iconWrapper}>
+            <Image width={24} height={24} src="/static/icons/star_24.svg" />
+            <p className={styles.text}>1</p>
+          </div>
+          <button onClick={handleUpload} className={styles.upVoteButton}>
+            Upvote
+          </button>
+        </div>
       </div>
     </div>
   );
