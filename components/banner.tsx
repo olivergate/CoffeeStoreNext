@@ -1,7 +1,8 @@
+import { UseLocation } from '../hooks/use-location';
 import styles from '../styles/banner.module.css';
 
 interface Props {
-  buttonClick: () => void;
+  location: UseLocation;
 }
 
 export const Banner: React.VFC<Props> = props => {
@@ -12,8 +13,8 @@ export const Banner: React.VFC<Props> = props => {
         <span className={styles.title2}>Connoiseur</span>
       </h1>
       <p className={styles.subTitle}>Discover your power</p>
-      <button className={styles.button} onClick={props.buttonClick}>
-        CLICK THIS BUTTON
+      <button className={styles.button} onClick={props.location.handleTrack}>
+        {props.location.loading ? 'Searching' : 'CLICK THIS BUTTON'}
       </button>
     </div>
   );

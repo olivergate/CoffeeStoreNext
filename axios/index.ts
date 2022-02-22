@@ -1,11 +1,12 @@
 import axios, { AxiosRequestConfig } from 'axios';
-import { CoffeeStore as FourSquareVenue } from '../pages';
+import { FourSquareVenue } from '../pages';
 
+// Todo Type the process.env
 export const fsq_api = axios.create({
   baseURL: 'https://api.foursquare.com/v3/',
   headers: {
     Accept: 'application/json',
-    Authorization: process.env.NEXT_PUBLIC_FOURSQUARE_API_KEY,
+    Authorization: process.env.NEXT_PUBLIC_FOURSQUARE_API_KEY!,
   },
 });
 
@@ -38,8 +39,7 @@ export const getNearby = (latlong: string, query: string, limit = 6) =>
     query,
     limit,
   });
-// places/{fsq_id}/photos
-const defaultPhoto =
+export const defaultPhoto =
   'https://fastly.4sqi.net/img/general/200x200/1049719_PiLE0Meoa27AkuLvSaNwcvswnmYRa0vxLQkOrpgMlwk.jpg';
 
 export const getPhoto = (fsq_id: string, limit = 1): Promise<StoreImage> =>
