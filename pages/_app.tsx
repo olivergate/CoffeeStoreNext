@@ -1,13 +1,13 @@
 import '../styles/globals.css';
 import type { AppProps } from 'next/app';
-import { Footer } from '../components/navbar';
+
+import { StoreProvider } from '../context/storeContext';
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
-    <>
+    <StoreProvider>
       <Component {...pageProps} />
-      <Footer />
-    </>
+    </StoreProvider>
   );
 }
 

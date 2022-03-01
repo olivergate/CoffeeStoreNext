@@ -1,13 +1,17 @@
-import { useState } from 'react';
+import { useContext, useState } from 'react';
+import { StoreContext } from '../context/storeContext';
 
 export type UseLocation = ReturnType<typeof useLocation>;
 export const useLocation = () => {
   const [errorMessage, setErrorMessage] = useState('');
-  const [latLong, setlatLong] = useState('');
-  const [loading, setIsLoading] = useState(false);
 
+  const [loading, setIsLoading] = useState(false);
+  const { dispatch } = useContext(StoreContext);
+  if (!dispatch) {
+    throw Error('Store is not initialised');
+  }
   const success: PositionCallback = position => {
-    setlatLong(`${position.coords.latitude}, ${position.coords.longitude}`);
+    dispatch({ type: 'SET_LATLONG', payload: `${position.coords.latitude},${position.coords.longitude}` });
     setErrorMessage('');
     setIsLoading(false);
   };
@@ -22,7 +26,6 @@ export const useLocation = () => {
 
   return {
     errorMessage,
-    latLong,
     handleTrack,
     loading,
   };

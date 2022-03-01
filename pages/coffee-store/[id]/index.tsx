@@ -1,54 +1,78 @@
-import { GetStaticPaths, GetStaticPathsResult, GetStaticProps, NextPage } from 'next';
+import { GetStaticPaths, GetStaticProps, NextPage } from 'next';
 import Head from 'next/head';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { ParsedUrlQuery } from 'querystring';
-import styles from '../../styles/coffeeStore.module.css';
+import styles from '../../../styles/coffeeStore.module.css';
 import classnames from 'classnames';
-import { defaultPhoto, fsq_get, getNearby, getPhoto } from '../../axios';
-import { FourSquareVenue } from '..';
+import { getNearby } from '../../../axios';
+import { FourSquareVenue } from '../..';
+import React, { useContext, useEffect, useState } from 'react';
+import { StoreContext } from '../../../context/storeContext';
 
 interface Params extends ParsedUrlQuery {
   id: string;
   [key: string]: any;
 }
 
-export const getStaticProps: GetStaticProps<Props, Params> = async context => {
-  const data = await getNearby('41.8781,-87.6298', 'coffee store');
-  const photo = context.params?.id ? await (await getPhoto(context.params?.id)).photo : defaultPhoto;
-  return {
-    props: {
-      coffeeStore: data.results.find(x => x.fsq_id.toString() === context.params?.id),
-      photo,
-    },
-  };
-};
-
 export const getStaticPaths: GetStaticPaths<Params> = async context => {
   const data = await getNearby('41.8781,-87.6298', 'coffee store');
 
   return {
-    paths: data.results.map(x => ({
-      params: { id: x.fsq_id },
-    })),
-    fallback: true,
+    paths: [
+      ...data.map(x => ({
+        params: { id: x.fsq_id },
+      })),
+    ],
+    fallback: 'blocking',
+  };
+};
+
+export const getStaticProps: GetStaticProps<Props, Params> = async context => {
+  const data = await getNearby('41.8781,-87.6298', 'coffee store');
+  const coffeeStore = data.find(x => x.fsq_id === context.params?.id);
+  if (coffeeStore) {
+    return {
+      props: {
+        coffeeStore: data.find(x => x.fsq_id === context.params?.id) || data[0],
+        renderLocal: false,
+      },
+    };
+  }
+  return {
+    props: {
+      renderLocal: true,
+    },
   };
 };
 
 interface Props {
   coffeeStore?: FourSquareVenue;
-  photo: string;
+  renderLocal: boolean;
 }
 
-const StorePage: NextPage<Props> = props => {
+const StorePage: NextPage<Props> = initialProps => {
+  const [coffeeStore, setCoffeeStore] = useState(initialProps.coffeeStore);
   const router = useRouter();
-  const { coffeeStore } = props;
-  if (router.isFallback || !coffeeStore) {
-    return <div>Loading...</div>;
+  const { state } = useContext(StoreContext);
+  const id = router.query.id;
+
+  useEffect(() => {
+    console.log('fired Effect');
+    console.log({ state });
+    if (initialProps.renderLocal) {
+      if (state.localStores.length > 0) {
+        setCoffeeStore(state.localStores.find(store => store.fsq_id === router.query.id));
+      }
+    }
+  }, [id, state.localStores.length]);
+
+  if (!coffeeStore) {
+    return null;
   }
 
-  const handleUpload = () => console.log(props);
+  const handleUpload = () => console.log(initialProps);
   return (
     <div className={styles.layout}>
       <Head>
@@ -64,7 +88,7 @@ const StorePage: NextPage<Props> = props => {
           <div className={styles.nameWrapper}>
             <h1 className={styles.name}>{coffeeStore.name}</h1>
           </div>
-          <Image width={600} height={360} alt={coffeeStore.name} src={props.photo} />
+          <Image width={600} height={360} alt={coffeeStore.name} src={coffeeStore.photo} />
         </div>
         <div className={classnames(styles.col2, 'glass')}>
           <div className={styles.iconWrapper}>
