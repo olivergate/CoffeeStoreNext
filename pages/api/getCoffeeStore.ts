@@ -1,5 +1,7 @@
 import Airtable from 'airtable';
 import { NextApiRequest, NextApiResponse } from 'next';
+import { CoffeeStore } from '..';
+import { ATCoffeeStore } from '../../axios';
 import Validator, { ValidationQuery } from '../../validation';
 const base = new Airtable({ apiKey: process.env.NEXT_PUBLIC_AIRTABLE_KEY }).base(
   process.env.NEXT_PUBLIC_AIRTABLE_BASE!
@@ -16,27 +18,24 @@ export interface CreateBody {
   name: string;
   address: string;
   neighbourhood: string;
-  voting: 0;
+  voting: 1;
   imgUrl: string;
 }
 
-const findCoffeeStore = async (id: string) =>
+export const findCoffeeStore = async (id: string) =>
   await table
     .select({
       filterByFormula: `id="${id}"`,
     })
     .firstPage();
+export interface FindRequest extends Pick<CoffeeStore, 'id'> {}
+export interface UpVoteRequest extends Pick<ATCoffeeStore, 'id'>, Pick<CoffeeStore, 'voting'> {}
 
-const addCoffeeStoreToDb = async (body: CreateBody) => {
-  return await table.create([{ fields: { ...body } }]);
-};
-
-const validationQuery: ValidationQuery<CreateBody> = {
+const validationQuery: ValidationQuery<FindRequest> = {
   id: [{ type: 'Required' }],
-  name: [{ type: 'Required' }],
 };
 
-const createCoffeeStore = async (req: TNextRequest<CreateBody>, res: NextApiResponse) => {
+const getCoffeeStore = async (req: TNextRequest<FindRequest>, res: NextApiResponse) => {
   const { body } = req;
   const validator = new Validator(validationQuery);
   await validator.validate(body);
@@ -45,20 +44,16 @@ const createCoffeeStore = async (req: TNextRequest<CreateBody>, res: NextApiResp
       .getValidationErrors()
       .map(x => x.message)
       .join('. ');
-    console.log('Error - ', response);
+    console.error('Error - ', response);
     res.status(400).json({ message: response });
   } else {
     try {
       const existingCS = await findCoffeeStore(req.body.id);
       if (existingCS.length !== 0) {
-        const existingStore = existingCS[0];
+        const existingStore = existingCS;
         console.log('Existing store found');
         res.json(existingStore);
-      } else {
-        const newStore = await addCoffeeStoreToDb(req.body);
-        console.log('New store created');
-        res.json({ newStore });
-      }
+      } else res.json(false);
     } catch (e) {
       console.error(e);
       res.status(500).send('WHATTTT');
@@ -66,4 +61,4 @@ const createCoffeeStore = async (req: TNextRequest<CreateBody>, res: NextApiResp
   }
 };
 
-export default createCoffeeStore;
+export default getCoffeeStore;

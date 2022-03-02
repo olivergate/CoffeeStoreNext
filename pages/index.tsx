@@ -10,6 +10,7 @@ import { useLocation } from '../hooks/use-location';
 import { useContext, useEffect } from 'react';
 import React from 'react';
 import { StoreContext } from '../context/storeContext';
+import { CreateBody } from './api/createCoffeeStore';
 
 export interface FourSquareVenue {
   fsq_id: string;
@@ -46,8 +47,10 @@ export interface FourSquareVenue {
   photo: string;
 }
 
+export interface CoffeeStore extends CreateBody {}
+
 interface Props {
-  coffeeStores: FourSquareVenue[];
+  coffeeStores: CoffeeStore[];
 }
 
 export const getStaticProps: GetStaticProps = async context => {
@@ -93,8 +96,8 @@ const Home: NextPage<Props> = props => {
             <div className={styles.cardLayout}>
               {state.localStores.map(x => {
                 return (
-                  <div key={x.fsq_id} className={styles.card}>
-                    <Card href={`coffee-store/${x.fsq_id}`} imageUrl={x.photo} name={x.name} />
+                  <div key={x.id} className={styles.card}>
+                    <Card href={`coffee-store/${x.id}`} imageUrl={x.imgUrl} name={x.name} />
                   </div>
                 );
               })}
@@ -107,8 +110,8 @@ const Home: NextPage<Props> = props => {
             <div className={styles.cardLayout}>
               {props.coffeeStores.map(x => {
                 return (
-                  <div key={x.fsq_id} className={styles.card}>
-                    <Card href={`coffee-store/${x.fsq_id}`} imageUrl={x.photo} name={x.name} />
+                  <div key={x.id} className={styles.card}>
+                    <Card href={`coffee-store/${x.id}`} imageUrl={x.imgUrl} name={x.name} />
                   </div>
                 );
               })}

@@ -1,9 +1,9 @@
 import { createContext, useReducer } from 'react';
-import { FourSquareVenue } from '../pages';
+import { CoffeeStore, FourSquareVenue } from '../pages';
 
 interface State {
   latlong: string;
-  localStores: FourSquareVenue[];
+  localStores: CoffeeStore[];
 }
 
 type SET_COFFEE_STORES = 'SET_COFFEE_STORES';
@@ -17,7 +17,7 @@ interface BaseAction {
 
 interface SetCoffeeStoreAction extends BaseAction {
   type: 'SET_COFFEE_STORES';
-  payload: FourSquareVenue[];
+  payload: CoffeeStore[];
 }
 
 interface SetLatLongAction extends BaseAction {

@@ -1,6 +1,10 @@
-import axios, { AxiosRequestConfig } from 'axios';
-import { FourSquareVenue } from '../pages';
+import { FieldSet, Records } from 'airtable';
+import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
+import { CoffeeStore, FourSquareVenue } from '../pages';
+import { CreateBody } from '../pages/api/createCoffeeStore';
+import { FindRequest } from '../pages/api/getCoffeeStore';
 import { Data } from '../pages/api/getCoffeeStoresByLocation';
+import { fourSVToCS } from '../pages/coffee-store/[id]';
 
 // Todo Type the process.env
 export const fsq_api = axios.create({
@@ -37,6 +41,15 @@ export interface StoreImage {
   photo: string;
 }
 
+export interface ATCoffeeStore extends FieldSet, CoffeeStore {}
+
+export const createATcoffeeStore = (payload: CreateBody) =>
+  api.post<CreateBody, AxiosResponse<Records<ATCoffeeStore>>>('/createCoffeeStore', payload);
+export const findAtCoffeeStore = (payload: FindRequest) =>
+  api.post<FindRequest, AxiosResponse<Records<ATCoffeeStore>>>('/getCoffeeStore', payload).then(x => x.data[0]);
+export const upVote = (payload: FindRequest) =>
+  api.post<FindRequest, AxiosResponse<Records<ATCoffeeStore>>>('/incrementScore', payload).then(x => x.data);
+
 export const fsq_get = <T>(url: string, params: any, axiosConfig?: AxiosRequestConfig) =>
   fsq_api.get<T>(url, { params, ...axiosConfig }).then(x => x.data);
 
@@ -48,10 +61,12 @@ export const getNearby = async (latlong: string, query: string, limit = 6) => {
     limit,
   });
   const photos = await getPhotos(venues.results.map(x => x.fsq_id));
-  return venues.results.map<FourSquareVenue>(venue => ({
-    ...venue,
-    photo: photos.find(photo => photo.fsq_id === venue.fsq_id)?.photo || defaultPhoto,
-  }));
+  return venues.results
+    .map<FourSquareVenue>(venue => ({
+      ...venue,
+      photo: photos.find(photo => photo.fsq_id === venue.fsq_id)?.photo || defaultPhoto,
+    }))
+    .map(x => fourSVToCS(x));
 };
 export const defaultPhoto =
   'https://fastly.4sqi.net/img/general/200x200/1049719_PiLE0Meoa27AkuLvSaNwcvswnmYRa0vxLQkOrpgMlwk.jpg';

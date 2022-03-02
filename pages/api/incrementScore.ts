@@ -1,6 +1,9 @@
 import Airtable from 'airtable';
 import { NextApiRequest, NextApiResponse } from 'next';
+import { CoffeeStore } from '..';
+import { ATCoffeeStore } from '../../axios';
 import Validator, { ValidationQuery } from '../../validation';
+import { findCoffeeStore, FindRequest, UpVoteRequest } from './getCoffeeStore';
 const base = new Airtable({ apiKey: process.env.NEXT_PUBLIC_AIRTABLE_KEY }).base(
   process.env.NEXT_PUBLIC_AIRTABLE_BASE!
 );
@@ -16,27 +19,17 @@ export interface CreateBody {
   name: string;
   address: string;
   neighbourhood: string;
-  voting: 0;
+  voting: number;
   imgUrl: string;
 }
 
-const findCoffeeStore = async (id: string) =>
-  await table
-    .select({
-      filterByFormula: `id="${id}"`,
-    })
-    .firstPage();
+const upVote = async (id: string, voting: number) => await table.update(id, { voting });
 
-const addCoffeeStoreToDb = async (body: CreateBody) => {
-  return await table.create([{ fields: { ...body } }]);
-};
-
-const validationQuery: ValidationQuery<CreateBody> = {
+const validationQuery: ValidationQuery<FindRequest> = {
   id: [{ type: 'Required' }],
-  name: [{ type: 'Required' }],
 };
 
-const createCoffeeStore = async (req: TNextRequest<CreateBody>, res: NextApiResponse) => {
+const incrementScore = async (req: TNextRequest<FindRequest>, res: NextApiResponse) => {
   const { body } = req;
   const validator = new Validator(validationQuery);
   await validator.validate(body);
@@ -49,21 +42,19 @@ const createCoffeeStore = async (req: TNextRequest<CreateBody>, res: NextApiResp
     res.status(400).json({ message: response });
   } else {
     try {
-      const existingCS = await findCoffeeStore(req.body.id);
-      if (existingCS.length !== 0) {
-        const existingStore = existingCS[0];
-        console.log('Existing store found');
-        res.json(existingStore);
+      const coffeeStore = await findCoffeeStore(req.body.id);
+      if (coffeeStore) {
+        const result = await upVote(coffeeStore[0].id, (coffeeStore[0].fields as ATCoffeeStore).voting + 1);
+        console.log('Upvoted');
+        res.status(200).json(result);
       } else {
-        const newStore = await addCoffeeStoreToDb(req.body);
-        console.log('New store created');
-        res.json({ newStore });
+        res.status(400).json({ message: "Coffee store doesn't exist in table" });
       }
     } catch (e) {
       console.error(e);
-      res.status(500).send('WHATTTT');
+      res.status(500).json({ message: 'Error incrementing score' + e });
     }
   }
 };
 
-export default createCoffeeStore;
+export default incrementScore;
