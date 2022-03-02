@@ -1,29 +1,8 @@
-import Airtable from 'airtable';
-import { NextApiRequest, NextApiResponse } from 'next';
-import { CoffeeStore } from '..';
-import { ATCoffeeStore } from '../../axios';
+import { NextApiResponse } from 'next';
+import { findCoffeeStoreAT, upVoteAT } from '../../axios/airtable';
+import { AirtableCoffeeStore, FindRequest } from '../../axios/serverApi';
+import { TNextRequest } from '../../types';
 import Validator, { ValidationQuery } from '../../validation';
-import { findCoffeeStore, FindRequest, UpVoteRequest } from './getCoffeeStore';
-const base = new Airtable({ apiKey: process.env.NEXT_PUBLIC_AIRTABLE_KEY }).base(
-  process.env.NEXT_PUBLIC_AIRTABLE_BASE!
-);
-
-export interface TNextRequest<T extends {}> extends NextApiRequest {
-  body: T;
-}
-
-const table = base('coffee-stores');
-
-export interface CreateBody {
-  id: string;
-  name: string;
-  address: string;
-  neighbourhood: string;
-  voting: number;
-  imgUrl: string;
-}
-
-const upVote = async (id: string, voting: number) => await table.update(id, { voting });
 
 const validationQuery: ValidationQuery<FindRequest> = {
   id: [{ type: 'Required' }],
@@ -42,9 +21,9 @@ const incrementScore = async (req: TNextRequest<FindRequest>, res: NextApiRespon
     res.status(400).json({ message: response });
   } else {
     try {
-      const coffeeStore = await findCoffeeStore(req.body.id);
+      const coffeeStore = await findCoffeeStoreAT(req.body.id);
       if (coffeeStore) {
-        const result = await upVote(coffeeStore[0].id, (coffeeStore[0].fields as ATCoffeeStore).voting + 1);
+        const result = await upVoteAT(coffeeStore[0].id, (coffeeStore[0].fields as AirtableCoffeeStore).voting + 1);
         console.log('Upvoted');
         res.status(200).json(result);
       } else {

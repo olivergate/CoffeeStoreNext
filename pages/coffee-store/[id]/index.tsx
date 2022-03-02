@@ -6,11 +6,12 @@ import { useRouter } from 'next/router';
 import { ParsedUrlQuery } from 'querystring';
 import styles from '../../../styles/coffeeStore.module.css';
 import classnames from 'classnames';
-import { createATcoffeeStore, findAtCoffeeStore, getNearby, upVote } from '../../../axios';
-import { CoffeeStore, FourSquareVenue } from '../..';
+import { createATcoffeeStore, findAtCoffeeStore, upVote } from '../../../axios/serverApi';
 import React, { useContext, useEffect, useState } from 'react';
 import { StoreContext } from '../../../context/storeContext';
 import useSWR from 'swr';
+import { CoffeeStore } from '../../../types';
+import { getNearby } from '../../../axios/foursqaure';
 
 interface Params extends ParsedUrlQuery {
   id: string;
@@ -54,25 +55,9 @@ interface Props {
   renderLocal: boolean;
 }
 
-const extractFromArray = (value: string | string[]): string => {
-  if (typeof value === 'string') {
-    return value;
-  }
-  return value.join(' ');
-};
-
-export const fourSVToCS = (venue: FourSquareVenue): CoffeeStore => ({
-  address: venue.location.address,
-  id: venue.fsq_id,
-  imgUrl: venue.photo,
-  name: venue.name,
-  neighbourhood: extractFromArray(venue.location.neighborhood || venue.location.cross_street || ''),
-  voting: 0,
-});
-
 const StorePage: NextPage<Props> = initialProps => {
   const [coffeeStore, setCoffeeStore] = useState<CoffeeStore | undefined>(initialProps.coffeeStore);
-  const [votingCount, setVotingCount] = useState(0);
+  const [votingCount, setVotingCount] = useState<number>(0);
   const router = useRouter();
   const { state } = useContext(StoreContext);
   const id = router.query.id as string;

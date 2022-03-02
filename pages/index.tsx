@@ -1,53 +1,16 @@
-import axios from 'axios';
 import type { NextPage, GetStaticProps } from 'next';
 import Head from 'next/head';
 import Image from 'next/image';
 import { Banner } from '../components/banner';
 import Card from '../components/card';
 import styles from '../styles/Home.module.css';
-import { StoreImage, fsq_get, getNearby, getPhotos, defaultPhoto, getCoffeeStores } from '../axios';
+import { getCoffeeStores } from '../axios/serverApi';
 import { useLocation } from '../hooks/use-location';
 import { useContext, useEffect } from 'react';
 import React from 'react';
 import { StoreContext } from '../context/storeContext';
-import { CreateBody } from './api/createCoffeeStore';
-
-export interface FourSquareVenue {
-  fsq_id: string;
-  categories: {
-    id: number;
-    name: string;
-    icon: {
-      prefix: string;
-      suffix: string;
-    };
-  }[];
-  chains: any[];
-  distance: number;
-  geocodes: {
-    main: {
-      latitude: number;
-      longitude: number;
-    };
-  };
-  location: {
-    address: string;
-    country: string;
-    cross_street: string;
-    dma: string;
-    formatted_address: string;
-    locality: string;
-    neighborhood: string;
-    postcode: string;
-    region: string;
-  };
-  name: string;
-  related_places: {};
-  timezone: string;
-  photo: string;
-}
-
-export interface CoffeeStore extends CreateBody {}
+import { CoffeeStore } from '../types';
+import { getNearby } from '../axios/foursqaure';
 
 interface Props {
   coffeeStores: CoffeeStore[];

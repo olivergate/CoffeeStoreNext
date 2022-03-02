@@ -1,7 +1,7 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { CoffeeStore, FourSquareVenue } from '..';
-import { getNearby } from '../../axios';
+import { getNearby } from '../../axios/foursqaure';
+import { CoffeeStore } from '../../types';
 
 export type Data = {
   coffeeStores: CoffeeStore[];

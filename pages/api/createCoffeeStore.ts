@@ -1,35 +1,8 @@
 import Airtable from 'airtable';
-import { NextApiRequest, NextApiResponse } from 'next';
+import { NextApiResponse } from 'next';
+import { addCoffeeStoreAT, findCoffeeStoreAT } from '../../axios/airtable';
+import { CreateBody, TNextRequest } from '../../types';
 import Validator, { ValidationQuery } from '../../validation';
-const base = new Airtable({ apiKey: process.env.NEXT_PUBLIC_AIRTABLE_KEY }).base(
-  process.env.NEXT_PUBLIC_AIRTABLE_BASE!
-);
-
-export interface TNextRequest<T extends {}> extends NextApiRequest {
-  body: T;
-}
-
-const table = base('coffee-stores');
-
-export interface CreateBody {
-  id: string;
-  name: string;
-  address: string;
-  neighbourhood: string;
-  voting: 0;
-  imgUrl: string;
-}
-
-const findCoffeeStore = async (id: string) =>
-  await table
-    .select({
-      filterByFormula: `id="${id}"`,
-    })
-    .firstPage();
-
-const addCoffeeStoreToDb = async (body: CreateBody) => {
-  return await table.create([{ fields: { ...body } }]);
-};
 
 const validationQuery: ValidationQuery<CreateBody> = {
   id: [{ type: 'Required' }],
@@ -49,13 +22,13 @@ const createCoffeeStore = async (req: TNextRequest<CreateBody>, res: NextApiResp
     res.status(400).json({ message: response });
   } else {
     try {
-      const existingCS = await findCoffeeStore(req.body.id);
+      const existingCS = await findCoffeeStoreAT(req.body.id);
       if (existingCS.length !== 0) {
         const existingStore = existingCS[0];
         console.log('Existing store found');
         res.json(existingStore);
       } else {
-        const newStore = await addCoffeeStoreToDb(req.body);
+        const newStore = await addCoffeeStoreAT(req.body);
         console.log('New store created');
         res.json({ newStore });
       }
