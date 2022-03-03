@@ -1,4 +1,3 @@
-import Airtable from 'airtable';
 import { NextApiResponse } from 'next';
 import { addCoffeeStoreAT, findCoffeeStoreAT } from '../../axios/airtable';
 import { CreateBody, TNextRequest } from '../../types';

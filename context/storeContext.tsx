@@ -1,5 +1,5 @@
 import { createContext, useReducer } from 'react';
-import { CoffeeStore, FourSquareVenue } from '../pages';
+import { CoffeeStore } from '../types';
 
 interface State {
   latlong: string;
